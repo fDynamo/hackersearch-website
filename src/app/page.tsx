@@ -1,95 +1,75 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
 import styles from "./page.module.scss";
 
+const socialFilters: { label: string; icon: string; value: string }[] = [
+  { label: "facebook", icon: "si_facebook", value: "facebook" },
+  { label: "X / Twitter", icon: "si_twitter", value: "twitter" },
+  { label: "instagram", icon: "si_instagram", value: "instagram" },
+  { label: "TikTok", icon: "si_tiktok", value: "tiktok" },
+  { label: "YouTube", icon: "si_youtube", value: "youtube" },
+  { label: "discord", icon: "si_discord", value: "discord" },
+];
+
 export default function Home() {
-  return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+  const [results, useResults] = useState<any[]>([]);
+
+  const renderResults = () => {
+    return null;
+  };
+
+  const renderSocialControls = () => {
+    return socialFilters.map((obj) => {
+      const imgFilePath = "/" + obj.icon + ".png";
+      return (
+        <div key={obj.value} className={styles.containerSocialControl}>
+          <input type="checkbox" />
+          <img src={imgFilePath} alt="" />
+          <span>{obj.label}</span>
         </div>
-      </div>
+      );
+    });
+  };
 
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+  return (
+    <>
+      <header>
+        <nav className={styles.nav}>
+          <div className={styles.containerNav}>
+            <a href="https://test.com">contact</a>
+            <a href="https://test.com">suggest a feature</a>
+            <a href="https://test.com">pricing</a>
+            <button className={styles.buttonLogin}>login</button>
+          </div>
+        </nav>
+      </header>
+      <main className={styles.main}>
+        <div className={styles.container}>
+          <div className={styles.containerHero}>
+            <h1>hackersearch</h1>
+            <h2>find tech businesses filtered by social media accounts</h2>
+          </div>
+          <div className={styles.containerSocials}>
+            {renderSocialControls()}
+          </div>
+          <input
+            type="text"
+            className={styles.inputSearch}
+            placeholder="Describe a business / product to narrow down search (optional)"
+          />
+          <div className={styles.containerAdvancedOptions}></div>
+          <div className={styles.containerSearchButtonRow}>
+            <button className={styles.searchButton}>search</button>
+          </div>
+          <div className={styles.containerFilterRow}>
+            <select>
+              <option value="lol">lol</option>
+            </select>
+          </div>
+          <div className={styles.containerResults}>{renderResults()}</div>
+        </div>
+      </main>
+    </>
   );
 }
