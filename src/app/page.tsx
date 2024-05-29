@@ -5,6 +5,7 @@ import styles from "./page.module.scss";
 import { SearchResultObj } from "@/utilities/customTypes";
 import { sendAPISearchRequest } from "@/utilities/useAPI";
 import { DUMMY_RESULTS } from "@/utilities/dummy";
+import useSessionStorage from "./hooks/useSessionStorage";
 
 const socialFilters: { label: string; value: string }[] = [
   { label: "facebook", value: "facebook" },
@@ -45,6 +46,13 @@ export default function Home() {
   const [smList, setSmList] = useState<string[]>([]);
   const [loadingSearch, setLoadingSearch] = useState(false);
 
+  const [
+    lastQueryEmbeddings,
+    setLastQueryEmbeddings,
+    isLastQueryEmbeddingsLoaded,
+    clearLastQueryEmbeddings,
+  ] = useSessionStorage<string>("last-query-embeddings", "");
+
   // Event handlers
   const handleSearchClick = async () => {
     // TODO: Validate
@@ -62,8 +70,13 @@ export default function Home() {
       },
     };
 
-    if (searchQuery) {
-      // TODO: Decide on ft and vs either through advanced or through inference
+    if (lastQueryEmbeddings) {
+      payload = {
+        ...payload,
+        search_query_type: "vs",
+        search_query_embedding: lastQueryEmbeddings,
+      };
+    } else if (searchQuery) {
       payload = {
         ...payload,
         search_query_type: "vs",
@@ -84,6 +97,10 @@ export default function Home() {
 
     // TODO: Handle pagination
     setSearchResults(res.data.results);
+
+    if (res.data.extra?.generated_query_vector) {
+      setLastQueryEmbeddings(res.data.extra?.generated_query_vector);
+    }
   };
 
   const handleSortChange = (e: ChangeEvent<HTMLSelectElement>) => {
@@ -103,6 +120,7 @@ export default function Home() {
     if (newVal && !hasChangedSortType.current) {
       setSearchSortType("relevant");
     }
+    clearLastQueryEmbeddings();
 
     setSearchQuery(newVal);
   };

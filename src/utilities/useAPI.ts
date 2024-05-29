@@ -2,7 +2,13 @@ import axios from "axios";
 import { SearchResultObj } from "./customTypes";
 
 type APISearchReturn =
-  | { isError: false; data: { results: SearchResultObj[] } }
+  | {
+      isError: false;
+      data: {
+        results: SearchResultObj[];
+        extra?: { generated_query_vector: string };
+      };
+    }
   | { isError: true; error: any };
 export async function sendAPISearchRequest(
   args: any
