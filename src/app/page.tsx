@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useRef, useState } from "react";
 import styles from "./page.module.scss";
 import { SearchResultObj } from "@/utilities/customTypes";
 import { sendAPISearchRequest } from "@/utilities/useAPI";
@@ -38,6 +38,8 @@ const FULL_SM_LIST = [
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchSortType, setSearchSortType] = useState("recent");
+  const hasChangedSortType = useRef(false);
+
   const [searchResults, setSearchResults] =
     useState<SearchResultObj[]>(DUMMY_RESULTS);
   const [smList, setSmList] = useState<string[]>([]);
@@ -84,7 +86,11 @@ export default function Home() {
     setSearchResults(res.data.results);
   };
 
-  const handleFilterChange = (e: ChangeEvent<HTMLSelectElement>) => {
+  const handleSortChange = (e: ChangeEvent<HTMLSelectElement>) => {
+    if (!hasChangedSortType.current) {
+      hasChangedSortType.current = true;
+    }
+
     const newVal = e.target.value;
     setSearchSortType(newVal);
   };
@@ -94,6 +100,10 @@ export default function Home() {
     if (!newVal && searchSortType == "relevant") {
       setSearchSortType("recent");
     }
+    if (newVal && !hasChangedSortType.current) {
+      setSearchSortType("relevant");
+    }
+
     setSearchQuery(newVal);
   };
 
@@ -155,7 +165,12 @@ export default function Home() {
   const renderResults = () => {
     return searchResults.map((searchObj) => {
       const popularityString = "90 / 100"; // TODO
-
+      let imgUrl = "";
+      if (searchObj.product_image_file_name) {
+        imgUrl =
+          process.env.NEXT_PUBLIC_IMAGE_BUCKET_URL +
+          searchObj.product_image_file_name;
+      }
       return (
         <div className={styles["result-block"]} key={searchObj.product_url}>
           <a
@@ -164,7 +179,11 @@ export default function Home() {
             target="_blank"
           >
             <div className={styles["result-block__head"]}>
-              <img src="" alt="" className={styles["result-block__img"]} />
+              <img
+                src={imgUrl}
+                alt=""
+                className={styles["result-block__img"]}
+              />
               <div className={styles["result-block__head-copy"]}>
                 <span className={styles["result-block__url-text"]}>
                   {searchObj.product_url}
@@ -231,7 +250,9 @@ export default function Home() {
         <div className={styles.container}>
           <div className={styles["hero"]}>
             <h1>hackersearch</h1>
-            <h2>find tech businesses filtered by social media accounts</h2>
+            <h2>
+              find tech businesses filtered by their social media accounts
+            </h2>
           </div>
           <div className={styles["socials"]}>{renderSocialControls()}</div>
           <input
@@ -256,7 +277,7 @@ export default function Home() {
           </div>
           <div className={styles["result-controls"]}>
             <select
-              onChange={handleFilterChange}
+              onChange={handleSortChange}
               value={searchSortType}
               className={styles["sort-input"]}
             >
