@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, useRef, useState } from "react";
+import { ChangeEvent, KeyboardEvent, useRef, useState } from "react";
 import styles from "./page.module.scss";
 import { SearchResultObj } from "@/utilities/customTypes";
 import { sendAPISearchRequest } from "@/utilities/useAPI";
@@ -56,6 +56,7 @@ export default function Home() {
   // Event handlers
   const handleSearchClick = async () => {
     // TODO: Validate
+    if (!searchQuery) return;
 
     setLoadingSearch(true);
 
@@ -112,7 +113,7 @@ export default function Home() {
     setSearchSortType(newVal);
   };
 
-  const handleSearchQueryChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleChangeSearchInput = (e: ChangeEvent<HTMLInputElement>) => {
     const newVal = e.target.value;
     if (!newVal && searchSortType == "relevant") {
       setSearchSortType("recent");
@@ -123,6 +124,13 @@ export default function Home() {
     clearLastQueryEmbeddings();
 
     setSearchQuery(newVal);
+  };
+
+  const handleKeyDownSearchInput = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key == "Enter") {
+      handleSearchClick();
+      e.preventDefault();
+    }
   };
 
   const handleSocialControlClick = (socialVal: string) => {
@@ -277,8 +285,9 @@ export default function Home() {
             type="text"
             className={styles["search-input"]}
             value={searchQuery}
-            onChange={handleSearchQueryChange}
+            onChange={handleChangeSearchInput}
             placeholder="Describe a business / product to narrow down search (optional)"
+            onKeyDown={handleKeyDownSearchInput}
           />
           <div className={styles["advanced-options"]}>
             <button className={styles["advanced-options-button"]}>
