@@ -68,6 +68,8 @@ export default function Home() {
 
   // Executes search based on search param states
   const executeSearch = async (overrides?: any) => {
+    if (loadingSearch) return;
+
     // TODO: Validate
     setLoadingSearch(true);
 
@@ -119,10 +121,10 @@ export default function Home() {
       };
     }
 
-    // TODO: Only send if we have changed stuff
     const res = await sendAPISearchRequest(payload);
 
     setLoadingSearch(false);
+
     if (res.isError) {
       // TODO
       window.alert("Something went wrong, please try again later");
@@ -447,6 +449,7 @@ export default function Home() {
             <button
               className={styles["search-button"]}
               onClick={handleSearchClick}
+              disabled={loadingSearch}
             >
               search
             </button>
@@ -465,16 +468,19 @@ export default function Home() {
           {!!searchResults.length && (
             <div className={styles["results-list"]}>
               {renderResults()}
-              {hasSearchedOnce && hasMoreResults && pageNum < MAX_PAGE_NUM && (
-                <div className={styles["more-results"]}>
-                  <button
-                    className={styles["more-results__button"]}
-                    onClick={handleClickMoreResults}
-                  >
-                    more results
-                  </button>
-                </div>
-              )}
+              {!loadingSearch &&
+                hasSearchedOnce &&
+                hasMoreResults &&
+                pageNum < MAX_PAGE_NUM && (
+                  <div className={styles["more-results"]}>
+                    <button
+                      className={styles["more-results__button"]}
+                      onClick={handleClickMoreResults}
+                    >
+                      more results
+                    </button>
+                  </div>
+                )}
             </div>
           )}
         </div>

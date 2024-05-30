@@ -205,6 +205,11 @@
   color: white;
   background-color: #38b623;
   background: linear-gradient(109deg, #38b623, #6dc380);
+
+  &:disabled {
+    background-color: gray;
+    background: gray;
+  }
 }
 
 .result-controls {
