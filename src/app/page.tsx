@@ -293,6 +293,12 @@ export default function Home() {
           process.env.NEXT_PUBLIC_IMAGE_BUCKET_URL +
           searchObj.product_image_file_name;
       }
+
+      let description = searchObj.product_description;
+      const MAX_DESCRIPTION_LENGTH = 450;
+      if (description.length > MAX_DESCRIPTION_LENGTH) {
+        description = description.slice(0, MAX_DESCRIPTION_LENGTH - 3) + "...";
+      }
       return (
         <div className={styles["result-block"]} key={searchObj.product_url}>
           <a
@@ -316,9 +322,7 @@ export default function Home() {
               </div>
             </div>
           </a>
-          <p className={styles["result-block__description"]}>
-            {searchObj.product_description}
-          </p>
+          <p className={styles["result-block__description"]}>{description}</p>
           <p className={styles["result-block__popularity"]}>
             <span className={styles["result-block__popularity-label"]}>
               popularity:
