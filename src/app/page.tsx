@@ -6,6 +6,7 @@ import { SearchResultObj } from "@/utilities/customTypes";
 import { sendAPISearchRequest } from "@/utilities/useAPI";
 import { DUMMY_RESULTS } from "@/utilities/dummy";
 import useSessionStorage from "./hooks/useSessionStorage";
+import { IoClose } from "react-icons/io5";
 
 const socialFilters: { label: string; value: string }[] = [
   { label: "facebook", value: "facebook" },
@@ -26,25 +27,21 @@ const SM_IMG_MAP: { [smStr: string]: string } = {
   twitter: "/si_twitter.png",
 };
 
-const FULL_SM_LIST = [
-  "email",
-  "facebook",
-  "discord",
-  "youtube",
-  "tiktok",
-  "instagram",
-  "twitter",
-];
-
 export default function Home() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchSortType, setSearchSortType] = useState("recent");
-  const hasChangedSortType = useRef(false);
-
   const [searchResults, setSearchResults] =
     useState<SearchResultObj[]>(DUMMY_RESULTS);
   const [smList, setSmList] = useState<string[]>([]);
   const [loadingSearch, setLoadingSearch] = useState(false);
+  const [isAdvancedOptionsOpen, setIsAdvancedOptionsOpen] = useState(false);
+
+  // search settings
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchSortType, setSearchSortType] = useState("recent");
+  const hasChangedSortType = useRef(false);
+  const [searchConcatType, setSearchConcatType] = useState<"AND" | "OR">("AND");
+  const [searchQueryType, setSearchQueryType] = useState<"auto" | "vs" | "ft">(
+    "auto"
+  );
 
   const [
     lastQueryEmbeddings,
@@ -56,13 +53,11 @@ export default function Home() {
   // Event handlers
   const handleSearchClick = async () => {
     // TODO: Validate
-    if (!searchQuery) return;
-
     setLoadingSearch(true);
 
     let payload: any = {
       sm_list: smList,
-      concat_type: "AND", // TODO
+      concat_type: searchConcatType, // TODO
       sorted_by: searchSortType,
       pagination: {
         // TODO
@@ -71,16 +66,26 @@ export default function Home() {
       },
     };
 
+    // Determine search query type
+    let fSearchQueryType = searchQueryType;
+    if (fSearchQueryType == "auto") {
+      if (searchQuery.split(" ").length > 3) {
+        fSearchQueryType = "vs";
+      } else {
+        fSearchQueryType = "ft";
+      }
+    }
+
     if (lastQueryEmbeddings) {
       payload = {
         ...payload,
-        search_query_type: "vs",
+        search_query_type: fSearchQueryType,
         search_query_embedding: lastQueryEmbeddings,
       };
     } else if (searchQuery) {
       payload = {
         ...payload,
-        search_query_type: "vs",
+        search_query_type: fSearchQueryType,
         search_query: searchQuery,
       };
     }
@@ -144,6 +149,30 @@ export default function Home() {
       }
       return newVal;
     });
+  };
+
+  const openAdvancedOptions = () => {
+    document.body.style.overflow = "hidden";
+    setIsAdvancedOptionsOpen(true);
+  };
+
+  const closeAdvancedOptions = () => {
+    document.body.style.overflow = "scroll";
+    setIsAdvancedOptionsOpen(false);
+  };
+
+  const handleSelectSearchConcatTypeChange = (
+    e: ChangeEvent<HTMLSelectElement>
+  ) => {
+    const newVal = e.target.value;
+    setSearchConcatType(newVal as "AND" | "OR");
+  };
+
+  const handleSelectSearchQueryTypeChange = (
+    e: ChangeEvent<HTMLSelectElement>
+  ) => {
+    const newVal = e.target.value;
+    setSearchQueryType(newVal as "auto" | "ft" | "vs");
   };
 
   // Render functions
@@ -258,6 +287,58 @@ export default function Home() {
     });
   };
 
+  const renderAdvancedOptions = () => {
+    if (isAdvancedOptionsOpen) {
+      return (
+        <div
+          className={styles["advanced-options-modal"]}
+          onClick={closeAdvancedOptions}
+        >
+          <div
+            className={styles["advanced-options-container"]}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className={styles["advanced-options__header"]}>
+              <span>Advanced options</span>
+              <button onClick={closeAdvancedOptions}>
+                <IoClose size={20} />
+              </button>
+            </div>
+            <div
+              className={styles["advanced-options__configs"]}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <select
+                onChange={handleSelectSearchConcatTypeChange}
+                value={searchConcatType}
+              >
+                <option value="AND">all</option>
+                <option value="OR">at least one</option>
+              </select>
+              <span>
+                Businesses must have ___ of the selected social media accounts
+              </span>
+              <select
+                onChange={handleSelectSearchQueryTypeChange}
+                value={searchQueryType}
+              >
+                <option value="auto">auto</option>
+                <option value="ft">full text / keywords</option>
+                <option value="vs">vector semantic</option>
+              </select>
+              <span>Method to use for product description search queries</span>
+            </div>
+            <p className={styles["advanced-options__disclaimer-text"]}>
+              All changes are auto-saved
+            </p>
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  // Main render
   return (
     <>
       <header>
@@ -290,9 +371,13 @@ export default function Home() {
             onKeyDown={handleKeyDownSearchInput}
           />
           <div className={styles["advanced-options"]}>
-            <button className={styles["advanced-options-button"]}>
+            <button
+              className={styles["advanced-options-button"]}
+              onClick={openAdvancedOptions}
+            >
               advanced options
             </button>
+            {renderAdvancedOptions()}
           </div>
           <div className={styles["search-action"]}>
             <button
