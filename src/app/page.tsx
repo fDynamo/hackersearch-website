@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, KeyboardEvent, useRef, useState } from "react";
+import { ChangeEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
 import styles from "./page.module.scss";
 import { SearchResultObj } from "@/utilities/customTypes";
 import { sendAPISearchRequest } from "@/utilities/useAPI";
@@ -27,6 +27,9 @@ const SM_IMG_MAP: { [smStr: string]: string } = {
   twitter: "/si_twitter.png",
 };
 
+const INITIAL_PAGE_NUM = 1;
+const PAGE_SIZE = 50;
+const MAX_PAGE_NUM = 5;
 export default function Home() {
   const [searchResults, setSearchResults] =
     useState<SearchResultObj[]>(DUMMY_RESULTS);
@@ -42,6 +45,17 @@ export default function Home() {
   const [searchQueryType, setSearchQueryType] = useState<"auto" | "vs" | "ft">(
     "auto"
   );
+  const isModifiedSearch = useRef(false);
+  const [hasMoreResults, setHasMoreResults] = useState(true);
+  const [hasSearchedOnce, setHasSearchedOnce] = useState(true);
+
+  useEffect(() => {
+    isModifiedSearch.current = true;
+    setPageNum(INITIAL_PAGE_NUM);
+    setHasMoreResults(true);
+  }, [searchQuery, searchSortType, searchConcatType, searchQueryType]);
+
+  const [pageNum, setPageNum] = useState(INITIAL_PAGE_NUM);
 
   const [
     lastQueryEmbeddings,
@@ -51,13 +65,24 @@ export default function Home() {
   ] = useSessionStorage<string>("last-query-embeddings", "");
 
   // Special functions
+
+  // Executes search based on search param states
   const executeSearch = async (overrides?: any) => {
     // TODO: Validate
     setLoadingSearch(true);
 
+    const isModified = isModifiedSearch.current;
+    if (!isModified && !hasMoreResults) return;
+
+    // Handle overrides
     let fSortType = searchSortType;
     if (overrides?.searchSortType) {
       fSortType = overrides.searchSortType;
+    }
+
+    let fPageNum = INITIAL_PAGE_NUM;
+    if (overrides?.pageNum) {
+      fPageNum = overrides.pageNum;
     }
 
     let payload: any = {
@@ -65,9 +90,8 @@ export default function Home() {
       concat_type: searchConcatType, // TODO
       sorted_by: fSortType,
       pagination: {
-        // TODO
-        pageSize: 10,
-        page: 1,
+        pageSize: PAGE_SIZE,
+        page: fPageNum,
       },
     };
 
@@ -106,11 +130,29 @@ export default function Home() {
       return;
     }
 
-    // TODO: Handle pagination
-    setSearchResults(res.data.results);
+    isModifiedSearch.current = false;
+    const newResults = res.data.results;
+    if (isModified) setSearchResults(newResults);
+    else
+      setSearchResults((curr) => {
+        const toReturn = [...curr];
+        newResults.forEach((obj) => {
+          const idx = toReturn.findIndex(
+            (val) => val.product_url == obj.product_url
+          );
+          if (idx === -1) {
+            toReturn.push(obj);
+          }
+        });
+        return toReturn;
+      });
 
     if (res.data.extra?.generated_query_vector) {
       setLastQueryEmbeddings(res.data.extra?.generated_query_vector);
+    }
+
+    if (newResults.length < PAGE_SIZE) {
+      setHasMoreResults(true);
     }
   };
 
@@ -128,7 +170,7 @@ export default function Home() {
     setSearchSortType(newVal);
     if (searchResults.length) {
       setTimeout(() => {
-        executeSearch({ searchSortType: newVal });
+        executeSearch({ searchSortType: newVal, pageNum: 0 });
       }, 1);
     }
   };
@@ -153,7 +195,7 @@ export default function Home() {
     }
   };
 
-  const handleSocialControlClick = (socialVal: string) => {
+  const handleClickSocialControl = (socialVal: string) => {
     setSmList((curr) => {
       const newVal = [...curr];
       const idx = newVal.indexOf(socialVal);
@@ -188,6 +230,13 @@ export default function Home() {
   ) => {
     const newVal = e.target.value;
     setSearchQueryType(newVal as "auto" | "ft" | "vs");
+  };
+
+  const handleClickMoreResults = () => {
+    let newPageNum = pageNum + 1;
+
+    setPageNum(newPageNum);
+    executeSearch({ pageNum: newPageNum });
   };
 
   // Render functions
@@ -288,7 +337,7 @@ export default function Home() {
         <div
           key={obj.value}
           className={styles["social__control"]}
-          onClick={(e) => handleSocialControlClick(obj.value)}
+          onClick={(e) => handleClickSocialControl(obj.value)}
         >
           <input
             type="checkbox"
@@ -414,7 +463,19 @@ export default function Home() {
             </select>
           </div>
           {!!searchResults.length && (
-            <div className={styles["results-list"]}>{renderResults()}</div>
+            <div className={styles["results-list"]}>
+              {renderResults()}
+              {hasSearchedOnce && hasMoreResults && pageNum < MAX_PAGE_NUM && (
+                <div className={styles["more-results"]}>
+                  <button
+                    className={styles["more-results__button"]}
+                    onClick={handleClickMoreResults}
+                  >
+                    more results
+                  </button>
+                </div>
+              )}
+            </div>
           )}
         </div>
       </main>
