@@ -50,15 +50,20 @@ export default function Home() {
     clearLastQueryEmbeddings,
   ] = useSessionStorage<string>("last-query-embeddings", "");
 
-  // Event handlers
-  const handleSearchClick = async () => {
+  // Special functions
+  const executeSearch = async (overrides?: any) => {
     // TODO: Validate
     setLoadingSearch(true);
+
+    let fSortType = searchSortType;
+    if (overrides?.searchSortType) {
+      fSortType = overrides.searchSortType;
+    }
 
     let payload: any = {
       sm_list: smList,
       concat_type: searchConcatType, // TODO
-      sorted_by: searchSortType,
+      sorted_by: fSortType,
       pagination: {
         // TODO
         pageSize: 10,
@@ -76,7 +81,7 @@ export default function Home() {
       }
     }
 
-    if (lastQueryEmbeddings) {
+    if (fSearchQueryType == "vs" && lastQueryEmbeddings) {
       payload = {
         ...payload,
         search_query_type: fSearchQueryType,
@@ -109,6 +114,11 @@ export default function Home() {
     }
   };
 
+  // Event handlers
+  const handleSearchClick = async () => {
+    executeSearch();
+  };
+
   const handleSortChange = (e: ChangeEvent<HTMLSelectElement>) => {
     if (!hasChangedSortType.current) {
       hasChangedSortType.current = true;
@@ -116,6 +126,11 @@ export default function Home() {
 
     const newVal = e.target.value;
     setSearchSortType(newVal);
+    if (searchResults.length) {
+      setTimeout(() => {
+        executeSearch({ searchSortType: newVal });
+      }, 1);
+    }
   };
 
   const handleChangeSearchInput = (e: ChangeEvent<HTMLInputElement>) => {
@@ -133,7 +148,7 @@ export default function Home() {
 
   const handleKeyDownSearchInput = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key == "Enter") {
-      handleSearchClick();
+      if (searchQuery) executeSearch();
       e.preventDefault();
     }
   };
