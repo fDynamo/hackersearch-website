@@ -7,6 +7,7 @@ import { sendAPISearchRequest } from "@/utilities/useAPI";
 import { DUMMY_RESULTS } from "@/utilities/dummy";
 import useSessionStorage from "./hooks/useSessionStorage";
 import { IoClose } from "react-icons/io5";
+import SafeImage from "@/components/SafeImage";
 
 const socialFilters: { label: string; value: string }[] = [
   { label: "facebook", value: "facebook" },
@@ -300,7 +301,7 @@ export default function Home() {
             target="_blank"
           >
             <div className={styles["result-block__head"]}>
-              <img
+              <SafeImage
                 src={imgUrl}
                 alt=""
                 className={styles["result-block__img"]}
