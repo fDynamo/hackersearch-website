@@ -10,6 +10,10 @@
   font-weight: 600;
   font-size: 14px;
 
+  &:hover {
+    background-color: rgb(66, 66, 66);
+  }
+
   &:disabled {
     background-color: gray;
   }
@@ -218,6 +222,22 @@
   margin-left: auto;
 }
 
+.export-content {
+  width: 300px;
+}
+
+.export-buttons {
+  display: flex;
+  flex-direction: column;
+  margin-top: 16px;
+  button {
+    @extend .generic-button;
+
+    &:not(:first-child) {
+      margin-top: 8px;
+    }
+  }
+}
 .results-list {
   margin-top: 8px;
   display: flex;

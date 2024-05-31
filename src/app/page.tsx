@@ -2,7 +2,10 @@
 
 import { ChangeEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
 import styles from "./page.module.scss";
-import { SearchResultObj } from "@/utilities/customTypes";
+import {
+  SearchResultExportObj,
+  SearchResultObj,
+} from "@/utilities/customTypes";
 import { sendAPISearchRequest } from "@/utilities/useAPI";
 import { DUMMY_RESULTS } from "@/utilities/dummy";
 import useSessionStorage from "./hooks/useSessionStorage";
@@ -171,6 +174,67 @@ export default function Home() {
     }
   };
 
+  const exportResults = (exportType: string) => {
+    let toExport: SearchResultObj[] = [];
+    if (exportType == "all") {
+      toExport = searchResults;
+    } else if (exportType == "selected") {
+      toExport = selectedResults;
+    }
+
+    // Transform objects
+    const exportData = toExport.map((resObj) => {
+      const toAdd: SearchResultExportObj = {
+        product_url: resObj.product_url,
+        product_name: resObj.product_name,
+        product_description: resObj.product_description,
+        listed_at: resObj.ph_listed_at,
+        sm_email: resObj.sm_email,
+        sm_instagram: resObj.sm_instagram,
+        sm_facebook: resObj.sm_facebook,
+        sm_twitter: resObj.sm_twitter,
+        sm_discord: resObj.sm_discord,
+        sm_linkedin: resObj.sm_linkedin,
+        sm_youtube: resObj.sm_youtube,
+        sm_tiktok: resObj.sm_tiktok,
+        sm_reddit: resObj.sm_reddit,
+        popularity: resObj.popularity,
+      };
+
+      return toAdd;
+    });
+
+    let stringToSave = Object.keys(exportData[0]).join(",") + "\n";
+    stringToSave += exportData
+      .map((resObj) => {
+        const valList = Object.values(resObj);
+        return valList
+          .map((val) => {
+            if (typeof val == "string") {
+              val = val.replaceAll(",", ",");
+              val = val.replaceAll('"', '""');
+              val = '"' + val + '"';
+            }
+            return val;
+          })
+          .join(",");
+      })
+      .join("\n");
+
+    var element = document.createElement("a");
+    element.setAttribute(
+      "href",
+      "data:text/csv;charset=utf-8," + encodeURIComponent(stringToSave)
+    );
+    element.setAttribute("download", "search_results.csv");
+
+    element.style.display = "none";
+    document.body.appendChild(element);
+
+    element.click();
+
+    document.body.removeChild(element);
+  };
   // Event handlers
   const handleSearchClick = async () => {
     executeSearch();
@@ -224,12 +288,10 @@ export default function Home() {
   };
 
   const openAdvancedOptions = () => {
-    document.body.style.overflow = "hidden";
     setIsAdvancedOptionsOpen(true);
   };
 
   const closeAdvancedOptions = () => {
-    document.body.style.overflow = "scroll";
     setIsAdvancedOptionsOpen(false);
   };
 
@@ -483,9 +545,33 @@ export default function Home() {
     </ModalBase>
   );
 
+  const modalExportOptions = () => (
+    <ModalBase
+      title="Export"
+      onClose={() => setIsExportOptionsOpen(false)}
+      closeOnBgClick
+      isOpen={isExportOptionsOpen}
+      containerClassName={styles["export-content"]}
+    >
+      <>
+        <span>Exports results to a .csv file</span>
+        <div className={styles["export-buttons"]}>
+          <button onClick={() => exportResults("all")}>export all</button>
+          {!!selectedResults.length && (
+            <button onClick={() => exportResults("selected")}>
+              export selected
+            </button>
+          )}
+        </div>
+      </>
+    </ModalBase>
+  );
+
   // Main render
   return (
     <>
+      {modalAdvancedOptions()}
+      {modalExportOptions()}
       <header>
         <nav className={styles.nav}>
           <div className={styles["nav__container"]}>
@@ -522,7 +608,6 @@ export default function Home() {
             >
               advanced options
             </button>
-            {modalAdvancedOptions()}
           </div>
           <div className={styles["search-action"]}>
             <button

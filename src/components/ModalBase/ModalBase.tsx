@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import styles from "./ModalBase.module.scss";
 import { IoClose } from "react-icons/io5";
 
@@ -15,6 +15,13 @@ export default function ModalBase(props: ModalBaseProps) {
     if (props.closeOnBgClick) props.onClose();
   };
 
+  useEffect(() => {
+    if (props.isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "scroll";
+    }
+  }, [props.isOpen]);
   if (!props.isOpen) return null;
   return (
     <div className={styles["modal-bg"]} onClick={handleBgClick}>
