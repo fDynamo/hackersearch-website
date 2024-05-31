@@ -135,6 +135,7 @@ export default function Home() {
 
     isModifiedSearch.current = false;
     const newResults = res.data.results;
+
     if (isModified) setSearchResults(newResults);
     else
       setSearchResults((curr) => {
@@ -286,7 +287,18 @@ export default function Home() {
 
   const renderResults = () => {
     return searchResults.map((searchObj) => {
-      const popularityString = "90 / 100"; // TODO
+      const popularityString = searchObj.popularity;
+      let popularityClassName = "low";
+      if (popularityString.includes("medium")) {
+        popularityClassName = "mid";
+      }
+      if (
+        popularityString.includes("high") ||
+        popularityString.includes("excellent")
+      ) {
+        popularityClassName = "high";
+      }
+
       let imgUrl = "";
       if (searchObj.product_image_file_name) {
         imgUrl =
@@ -323,7 +335,13 @@ export default function Home() {
             </div>
           </a>
           <p className={styles["result-block__description"]}>{description}</p>
-          <p className={styles["result-block__popularity"]}>
+          <p
+            className={
+              styles["result-block__popularity"] +
+              " " +
+              styles[popularityClassName]
+            }
+          >
             <span className={styles["result-block__popularity-label"]}>
               popularity:
             </span>{" "}
@@ -344,7 +362,7 @@ export default function Home() {
         <div
           key={obj.value}
           className={styles["social__control"]}
-          onClick={(e) => handleClickSocialControl(obj.value)}
+          onClick={() => handleClickSocialControl(obj.value)}
         >
           <input
             type="checkbox"

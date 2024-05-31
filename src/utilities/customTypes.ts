@@ -4,7 +4,6 @@ export type SearchResultObj = {
   product_description: string;
   product_image_file_name: string;
   ph_source_url: string;
-  ph_count_follower: number;
   ph_listed_at: string;
   ph_updated_at: string;
   sm_email: string | null;
@@ -16,4 +15,5 @@ export type SearchResultObj = {
   sm_youtube: string | null;
   sm_tiktok: string | null;
   sm_reddit: string | null;
+  popularity: string;
 };

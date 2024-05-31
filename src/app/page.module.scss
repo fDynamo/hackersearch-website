@@ -282,6 +282,18 @@
   margin-bottom: 8px;
 }
 
+.result-block__popularity {
+  &.low {
+    color: rgb(78, 0, 0);
+  }
+  &.mid {
+    color: rgb(88, 88, 0);
+  }
+  &.high {
+    color: rgb(0, 48, 0);
+  }
+}
+
 .result-block__popularity-label {
   margin-right: 4px;
   color: rgb(70, 70, 70);
