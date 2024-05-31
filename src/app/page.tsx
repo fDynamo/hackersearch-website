@@ -6,7 +6,6 @@ import { SearchResultObj } from "@/utilities/customTypes";
 import { sendAPISearchRequest } from "@/utilities/useAPI";
 import { DUMMY_RESULTS } from "@/utilities/dummy";
 import useSessionStorage from "./hooks/useSessionStorage";
-import { IoClose } from "react-icons/io5";
 import SafeImage from "@/components/SafeImage";
 import ModalBase from "@/components/ModalBase";
 
@@ -39,11 +38,16 @@ const MAX_PAGE_NUM = 5;
 export default function Home() {
   const [searchResults, setSearchResults] =
     useState<SearchResultObj[]>(DUMMY_RESULTS);
-  const [smList, setSmList] = useState<string[]>([]);
-  const [loadingSearch, setLoadingSearch] = useState(false);
+  const [isLoadingSearch, setIsLoadingSearch] = useState(false);
   const [isAdvancedOptionsOpen, setIsAdvancedOptionsOpen] = useState(false);
+  const [isExportOptionsOpen, setIsExportOptionsOpen] = useState(false);
+  const [isModifiedSearch, setIsModifiedSearch] = useState(false);
+  const [hasMoreResults, setHasMoreResults] = useState(true);
+  const [hasSearchedOnce, setHasSearchedOnce] = useState(false);
+  const [pageNum, setPageNum] = useState(INITIAL_PAGE_NUM);
 
   // search settings
+  const [smList, setSmList] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchSortType, setSearchSortType] = useState("recent");
   const hasChangedSortType = useRef(false);
@@ -51,17 +55,6 @@ export default function Home() {
   const [searchQueryType, setSearchQueryType] = useState<"auto" | "vs" | "ft">(
     "auto"
   );
-  const isModifiedSearch = useRef(false);
-  const [hasMoreResults, setHasMoreResults] = useState(true);
-  const [hasSearchedOnce, setHasSearchedOnce] = useState(true);
-
-  useEffect(() => {
-    isModifiedSearch.current = true;
-    setPageNum(INITIAL_PAGE_NUM);
-    setHasMoreResults(true);
-  }, [searchQuery, searchSortType, searchConcatType, searchQueryType]);
-
-  const [pageNum, setPageNum] = useState(INITIAL_PAGE_NUM);
 
   const [
     lastQueryEmbeddings,
@@ -70,16 +63,24 @@ export default function Home() {
     clearLastQueryEmbeddings,
   ] = useSessionStorage<string>("last-query-embeddings", "");
 
+  const [selectedResults, setSelectedResults] = useState<SearchResultObj[]>([]);
+
+  useEffect(() => {
+    setIsModifiedSearch(true);
+    setPageNum(INITIAL_PAGE_NUM);
+    setHasMoreResults(true);
+  }, [searchQuery, searchSortType, searchConcatType, searchQueryType, smList]);
+
   // Special functions
 
   // Executes search based on search param states
-  const executeSearch = async (overrides?: any) => {
-    if (loadingSearch) return;
+  const executeSearch = async (overrides?: any, options?: any) => {
+    if (isLoadingSearch) return;
 
     // TODO: Validate
-    setLoadingSearch(true);
+    setIsLoadingSearch(true);
 
-    const isModified = isModifiedSearch.current;
+    const isModified = isModifiedSearch;
     if (!isModified && !hasMoreResults) return;
 
     // Handle overrides
@@ -129,7 +130,12 @@ export default function Home() {
 
     const res = await sendAPISearchRequest(payload);
 
-    setLoadingSearch(false);
+    setIsLoadingSearch(false);
+    setHasSearchedOnce(true);
+
+    if (isModified && !options?.keepSelected) {
+      setSelectedResults([]);
+    }
 
     if (res.isError) {
       // TODO
@@ -138,7 +144,7 @@ export default function Home() {
       return;
     }
 
-    isModifiedSearch.current = false;
+    setIsModifiedSearch(false);
     const newResults = res.data.results;
 
     if (isModified) setSearchResults(newResults);
@@ -241,11 +247,30 @@ export default function Home() {
     setSearchQueryType(newVal as "auto" | "ft" | "vs");
   };
 
+  const handleClickExport = () => {
+    setIsExportOptionsOpen(true);
+  };
+
   const handleClickMoreResults = () => {
     let newPageNum = pageNum + 1;
 
     setPageNum(newPageNum);
-    executeSearch({ pageNum: newPageNum });
+    executeSearch({ pageNum: newPageNum }, { keepSelected: true });
+  };
+
+  const handleResultSelect = (selectedObj: SearchResultObj) => {
+    setSelectedResults((curr) => {
+      const newList = [...curr];
+      const tmpIdx = newList.findIndex(
+        (e) => e.product_url == selectedObj.product_url
+      );
+      if (tmpIdx == -1) {
+        newList.push(selectedObj);
+      } else {
+        newList.splice(tmpIdx, 1);
+      }
+      return newList;
+    });
   };
 
   // Render functions
@@ -332,19 +357,30 @@ export default function Home() {
       if (description.length > MAX_DESCRIPTION_LENGTH) {
         description = description.slice(0, MAX_DESCRIPTION_LENGTH - 3) + "...";
       }
+
+      const isSelected = !!selectedResults.find(
+        (e) => e.product_url === searchObj.product_url
+      );
+
       return (
         <div className={styles["result-block"]} key={searchObj.product_url}>
-          <a
-            className={styles["result-block__head-link"]}
-            href={"https://" + searchObj.product_url}
-            target="_blank"
-          >
-            <div className={styles["result-block__head"]}>
+          <div className={styles["result-block__head"]}>
+            <a
+              className={styles["result-block__head-link"]}
+              href={"https://" + searchObj.product_url}
+              target="_blank"
+            >
               <SafeImage
                 src={imgUrl}
                 alt=""
                 className={styles["result-block__img"]}
               />
+            </a>
+            <a
+              className={styles["result-block__head-link"]}
+              href={"https://" + searchObj.product_url}
+              target="_blank"
+            >
               <div className={styles["result-block__head-copy"]}>
                 <span className={styles["result-block__url-text"]}>
                   {searchObj.product_url}
@@ -353,8 +389,16 @@ export default function Home() {
                   {searchObj.product_name}
                 </span>
               </div>
+            </a>
+            <div className={styles["result-block__head-select-container"]}>
+              <input
+                type="checkbox"
+                checked={isSelected}
+                readOnly
+                onClick={() => handleResultSelect(searchObj)}
+              />
             </div>
-          </a>
+          </div>
           <p className={styles["result-block__description"]}>{description}</p>
           <div className={styles["result-block__info-container"]}>
             <p className={styles["result-block__date"]}>
@@ -484,7 +528,7 @@ export default function Home() {
             <button
               className={styles["search-button"]}
               onClick={handleSearchClick}
-              disabled={loadingSearch}
+              disabled={isLoadingSearch}
             >
               search
             </button>
@@ -501,22 +545,33 @@ export default function Home() {
             </select>
           </div>
           {!!searchResults.length && (
-            <div className={styles["results-list"]}>
-              {renderResults()}
-              {!loadingSearch &&
-                hasSearchedOnce &&
-                hasMoreResults &&
-                pageNum < MAX_PAGE_NUM && (
-                  <div className={styles["more-results"]}>
-                    <button
-                      className={styles["more-results__button"]}
-                      onClick={handleClickMoreResults}
-                    >
-                      more results
-                    </button>
-                  </div>
-                )}
-            </div>
+            <>
+              <div className={styles["export-controls"]}>
+                <button
+                  className={styles["export__button"]}
+                  onClick={handleClickExport}
+                  disabled={isLoadingSearch}
+                >
+                  export
+                </button>
+              </div>
+              <div className={styles["results-list"]}>
+                {renderResults()}
+                {hasSearchedOnce &&
+                  hasMoreResults &&
+                  pageNum < MAX_PAGE_NUM && (
+                    <div className={styles["more-results"]}>
+                      <button
+                        className={styles["more-results__button"]}
+                        onClick={handleClickMoreResults}
+                        disabled={isLoadingSearch}
+                      >
+                        more results
+                      </button>
+                    </div>
+                  )}
+              </div>
+            </>
           )}
         </div>
       </main>
