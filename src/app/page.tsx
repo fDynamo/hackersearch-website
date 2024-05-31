@@ -285,6 +285,16 @@ export default function Home() {
     });
   };
 
+  const getDateString = (inDateStr: string) => {
+    const dateObj = new Date(inDateStr);
+
+    return Intl.DateTimeFormat("en", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }).format(dateObj);
+  };
+
   const renderResults = () => {
     return searchResults.map((searchObj) => {
       const popularityString = searchObj.popularity;
@@ -335,18 +345,23 @@ export default function Home() {
             </div>
           </a>
           <p className={styles["result-block__description"]}>{description}</p>
-          <p
-            className={
-              styles["result-block__popularity"] +
-              " " +
-              styles[popularityClassName]
-            }
-          >
-            <span className={styles["result-block__popularity-label"]}>
-              popularity:
-            </span>{" "}
-            {popularityString}
-          </p>
+          <div className={styles["result-block__info-container"]}>
+            <p className={styles["result-block__date"]}>
+              {getDateString(searchObj.ph_listed_at)}
+            </p>
+            <p
+              className={
+                styles["result-block__popularity"] +
+                " " +
+                styles[popularityClassName]
+              }
+            >
+              <span className={styles["result-block__popularity-label"]}>
+                popularity:
+              </span>{" "}
+              {popularityString}
+            </p>
+          </div>
           <div className={styles["result-block__sm-list"]}>
             {renderResultSmList(searchObj)}
           </div>

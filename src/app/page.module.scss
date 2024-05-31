@@ -279,7 +279,19 @@
 }
 
 .result-block__description {
-  margin-bottom: 8px;
+  margin-bottom: 2px;
+}
+
+.result-block__info-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  font-size: 14px;
+}
+
+.result-block__date {
+  color: rgb(70, 70, 70);
+  width: 100px;
 }
 
 .result-block__popularity {
@@ -295,7 +307,6 @@
 }
 
 .result-block__popularity-label {
-  margin-right: 4px;
   color: rgb(70, 70, 70);
 }
 
@@ -303,13 +314,13 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  margin-top: 6px;
+  margin-top: 12px;
 }
 
 .result-block__sm-icon-link {
   img {
-    width: 24px;
-    height: 24px;
+    width: 26px;
+    height: 26px;
   }
   &:not(:first-child) {
     img {
