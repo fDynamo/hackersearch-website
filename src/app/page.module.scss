@@ -150,7 +150,8 @@
   grid-template-rows: repeat(2, 50px);
 
   span,
-  select {
+  select,
+  input {
     margin-bottom: 8px;
   }
 
@@ -159,13 +160,18 @@
     margin-left: 16px;
   }
 
-  select {
+  select,
+  input {
     width: 160px;
     font-size: 14px;
     padding: 4px 16px;
     background: none;
     border: 1px solid black;
     border-radius: 4px;
+  }
+
+  input {
+    height: 42px;
   }
 }
 

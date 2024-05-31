@@ -49,6 +49,7 @@ export default function Home() {
   const [searchQueryType, setSearchQueryType] = useState<"auto" | "vs" | "ft">(
     "auto"
   );
+  const [vsRelevanceCap, setVsRelevanceCap] = useState(1);
 
   // Other states
   const [searchResults, setSearchResults] =
@@ -82,7 +83,14 @@ export default function Home() {
     setIsModifiedSearch(true);
     setPageNum(INITIAL_PAGE_NUM);
     setHasMoreResults(true);
-  }, [searchQuery, searchSortType, searchConcatType, searchQueryType, smList]);
+  }, [
+    searchQuery,
+    searchSortType,
+    searchConcatType,
+    searchQueryType,
+    smList,
+    vsRelevanceCap,
+  ]);
 
   // Special functions
 
@@ -114,6 +122,9 @@ export default function Home() {
       pagination: {
         pageSize: PAGE_SIZE,
         page: fPageNum,
+      },
+      options: {
+        vector_search_relevance_cap: vsRelevanceCap,
       },
     };
 
@@ -160,7 +171,7 @@ export default function Home() {
     setIsModifiedSearch(false);
     const newResults = res.data.results;
 
-    if (isModified) setSearchResults(newResults);
+    if (isModified || options?.reset) setSearchResults(newResults);
     else
       setSearchResults((curr) => {
         const toReturn = [...curr];
@@ -267,9 +278,7 @@ export default function Home() {
     const newVal = e.target.value;
     setSearchSortType(newVal);
     if (searchResults.length) {
-      setTimeout(() => {
-        executeSearch({ searchSortType: newVal, pageNum: 0 });
-      }, 1);
+      executeSearch({ searchSortType: newVal, pageNum: 0 }, { reset: true });
     }
   };
 
@@ -571,6 +580,15 @@ export default function Home() {
             <option value="vs">vector semantic</option>
           </select>
           <span>Method to use for product description search queries</span>
+          <input
+            type="number"
+            value={vsRelevanceCap}
+            onChange={(e) => {
+              let newVal = parseFloat(e.target.value);
+              setVsRelevanceCap(newVal);
+            }}
+          />
+          <span>Vector semantic relevance cap</span>
         </div>
         <p className={styles["advanced-options__disclaimer-text"]}>
           All changes are auto-saved
