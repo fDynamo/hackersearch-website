@@ -8,6 +8,7 @@ import { DUMMY_RESULTS } from "@/utilities/dummy";
 import useSessionStorage from "./hooks/useSessionStorage";
 import { IoClose } from "react-icons/io5";
 import SafeImage from "@/components/SafeImage";
+import ModalBase from "@/components/ModalBase";
 
 const socialFilters: { label: string; value: string }[] = [
   { label: "facebook", value: "facebook" },
@@ -401,56 +402,42 @@ export default function Home() {
     });
   };
 
-  const renderAdvancedOptions = () => {
-    if (isAdvancedOptionsOpen) {
-      return (
-        <div
-          className={styles["advanced-options-modal"]}
-          onClick={closeAdvancedOptions}
-        >
-          <div
-            className={styles["advanced-options-container"]}
-            onClick={(e) => e.stopPropagation()}
+  // Modal renders
+  const modalAdvancedOptions = () => (
+    <ModalBase
+      title="Advanced options"
+      onClose={closeAdvancedOptions}
+      closeOnBgClick
+      isOpen={isAdvancedOptionsOpen}
+    >
+      <>
+        <div className={styles["advanced-options__config"]}>
+          <select
+            onChange={handleSelectSearchConcatTypeChange}
+            value={searchConcatType}
           >
-            <div className={styles["advanced-options__header"]}>
-              <span>Advanced options</span>
-              <button onClick={closeAdvancedOptions}>
-                <IoClose size={20} />
-              </button>
-            </div>
-            <div
-              className={styles["advanced-options__configs"]}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <select
-                onChange={handleSelectSearchConcatTypeChange}
-                value={searchConcatType}
-              >
-                <option value="AND">all</option>
-                <option value="OR">at least one</option>
-              </select>
-              <span>
-                Businesses must have ___ of the selected social media accounts
-              </span>
-              <select
-                onChange={handleSelectSearchQueryTypeChange}
-                value={searchQueryType}
-              >
-                <option value="auto">auto</option>
-                <option value="ft">full text / keywords</option>
-                <option value="vs">vector semantic</option>
-              </select>
-              <span>Method to use for product description search queries</span>
-            </div>
-            <p className={styles["advanced-options__disclaimer-text"]}>
-              All changes are auto-saved
-            </p>
-          </div>
+            <option value="AND">all</option>
+            <option value="OR">at least one</option>
+          </select>
+          <span>
+            Businesses must have ___ of the selected social media accounts
+          </span>
+          <select
+            onChange={handleSelectSearchQueryTypeChange}
+            value={searchQueryType}
+          >
+            <option value="auto">auto</option>
+            <option value="ft">full text / keywords</option>
+            <option value="vs">vector semantic</option>
+          </select>
+          <span>Method to use for product description search queries</span>
         </div>
-      );
-    }
-    return null;
-  };
+        <p className={styles["advanced-options__disclaimer-text"]}>
+          All changes are auto-saved
+        </p>
+      </>
+    </ModalBase>
+  );
 
   // Main render
   return (
@@ -491,7 +478,7 @@ export default function Home() {
             >
               advanced options
             </button>
-            {renderAdvancedOptions()}
+            {modalAdvancedOptions()}
           </div>
           <div className={styles["search-action"]}>
             <button
