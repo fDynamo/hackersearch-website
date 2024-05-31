@@ -362,3 +362,18 @@
   @extend .generic-button;
   margin-left: auto;
 }
+
+.scroll-up-widget {
+  position: fixed;
+  bottom: 20px;
+  $buttonSize: 48px;
+  right: calc(50vw - ($buttonSize) / 2);
+
+  button {
+    @extend .generic-button;
+    width: $buttonSize;
+    height: $buttonSize;
+    border-radius: 8px;
+    padding: 0;
+  }
+}

@@ -11,6 +11,7 @@ import { DUMMY_RESULTS } from "@/utilities/dummy";
 import useSessionStorage from "./hooks/useSessionStorage";
 import SafeImage from "@/components/SafeImage";
 import ModalBase from "@/components/ModalBase";
+import { FaArrowUp } from "react-icons/fa";
 
 const socialFilters: { label: string; value: string }[] = [
   { label: "facebook", value: "facebook" },
@@ -39,16 +40,6 @@ const INITIAL_PAGE_NUM = 1;
 const PAGE_SIZE = 50;
 const MAX_PAGE_NUM = 5;
 export default function Home() {
-  const [searchResults, setSearchResults] =
-    useState<SearchResultObj[]>(DUMMY_RESULTS);
-  const [isLoadingSearch, setIsLoadingSearch] = useState(false);
-  const [isAdvancedOptionsOpen, setIsAdvancedOptionsOpen] = useState(false);
-  const [isExportOptionsOpen, setIsExportOptionsOpen] = useState(false);
-  const [isModifiedSearch, setIsModifiedSearch] = useState(false);
-  const [hasMoreResults, setHasMoreResults] = useState(true);
-  const [hasSearchedOnce, setHasSearchedOnce] = useState(false);
-  const [pageNum, setPageNum] = useState(INITIAL_PAGE_NUM);
-
   // search settings
   const [smList, setSmList] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -59,6 +50,18 @@ export default function Home() {
     "auto"
   );
 
+  // Other states
+  const [searchResults, setSearchResults] =
+    useState<SearchResultObj[]>(DUMMY_RESULTS);
+  const [isLoadingSearch, setIsLoadingSearch] = useState(false);
+  const [isAdvancedOptionsOpen, setIsAdvancedOptionsOpen] = useState(false);
+  const [isExportOptionsOpen, setIsExportOptionsOpen] = useState(false);
+  const [isModifiedSearch, setIsModifiedSearch] = useState(false);
+  const [hasMoreResults, setHasMoreResults] = useState(true);
+  const [hasSearchedOnce, setHasSearchedOnce] = useState(false);
+  const [pageNum, setPageNum] = useState(INITIAL_PAGE_NUM);
+  const [selectedResults, setSelectedResults] = useState<SearchResultObj[]>([]);
+  const [showScrollUpWidget, setShowScrollUpWidget] = useState(false);
   const [
     lastQueryEmbeddings,
     setLastQueryEmbeddings,
@@ -66,7 +69,14 @@ export default function Home() {
     clearLastQueryEmbeddings,
   ] = useSessionStorage<string>("last-query-embeddings", "");
 
-  const [selectedResults, setSelectedResults] = useState<SearchResultObj[]>([]);
+  // Effects
+  useEffect(() => {
+    window.addEventListener("scroll", handleScroll);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
 
   useEffect(() => {
     setIsModifiedSearch(true);
@@ -235,7 +245,16 @@ export default function Home() {
 
     document.body.removeChild(element);
   };
+
   // Event handlers
+  const handleScroll = (e: Event) => {
+    const scrollY = window.scrollY;
+    if (scrollY > 200) setShowScrollUpWidget(true);
+    else {
+      setShowScrollUpWidget(false);
+    }
+  };
+
   const handleSearchClick = async () => {
     executeSearch();
   };
@@ -333,6 +352,10 @@ export default function Home() {
       }
       return newList;
     });
+  };
+
+  const handleClickScrollUp = () => {
+    window.scrollTo(0, 0);
   };
 
   // Render functions
@@ -508,6 +531,17 @@ export default function Home() {
     });
   };
 
+  const renderScrollUpWidget = () => {
+    if (!showScrollUpWidget) return null;
+    return (
+      <div className={styles["scroll-up-widget"]}>
+        <button onClick={handleClickScrollUp}>
+          <FaArrowUp size={24} />
+        </button>
+      </div>
+    );
+  };
+
   // Modal renders
   const modalAdvancedOptions = () => (
     <ModalBase
@@ -572,6 +606,7 @@ export default function Home() {
     <>
       {modalAdvancedOptions()}
       {modalExportOptions()}
+      {renderScrollUpWidget()}
       <header>
         <nav className={styles.nav}>
           <div className={styles["nav__container"]}>
