@@ -16,6 +16,8 @@ const socialFilters: { label: string; value: string }[] = [
   { label: "TikTok", value: "tiktok" },
   { label: "YouTube", value: "youtube" },
   { label: "discord", value: "discord" },
+  { label: "Reddit", value: "reddit" },
+  { label: "LinkedIn", value: "linkedin" },
 ];
 
 const SM_IMG_MAP: { [smStr: string]: string } = {
@@ -26,6 +28,8 @@ const SM_IMG_MAP: { [smStr: string]: string } = {
   tiktok: "/si_tiktok.png",
   instagram: "/si_instagram.png",
   twitter: "/si_twitter.png",
+  reddit: "/si_reddit.png",
+  linkedin: "/si_linkedin.png",
 };
 
 const INITIAL_PAGE_NUM = 1;
@@ -156,7 +160,7 @@ export default function Home() {
     }
 
     if (newResults.length < PAGE_SIZE) {
-      setHasMoreResults(true);
+      setHasMoreResults(false);
     }
   };
 
@@ -267,6 +271,12 @@ export default function Home() {
     }
     if (searchObj.sm_facebook) {
       resSmList.push({ sm: "facebook", url: searchObj.sm_facebook });
+    }
+    if (searchObj.sm_reddit) {
+      resSmList.push({ sm: "reddit", url: searchObj.sm_reddit });
+    }
+    if (searchObj.sm_linkedin) {
+      resSmList.push({ sm: "linkedin", url: searchObj.sm_linkedin });
     }
 
     return resSmList.map((smObj) => {
