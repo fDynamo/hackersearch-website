@@ -471,9 +471,9 @@ export default function Home() {
             placeholder="Describe a business / product to narrow down search (optional)"
             onKeyDown={handleKeyDownSearchInput}
           />
-          <div className={styles["advanced-options"]}>
+          <div className={styles["below-search-input"]}>
             <button
-              className={styles["advanced-options-button"]}
+              className={styles["more-button"]}
               onClick={openAdvancedOptions}
             >
               advanced options

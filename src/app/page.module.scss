@@ -115,15 +115,19 @@
   border: 1px solid rgb(170, 170, 170);
 }
 
-.advanced-options {
+.below-search-input {
   margin-top: 10px;
 }
 
-.advanced-options-button {
+.more-button {
   border: none;
   background: none;
   font-size: 14px;
   color: rgb(116, 116, 116);
+
+  &:not(:first-child) {
+    margin-left: 16px;
+  }
 }
 
 .advanced-options__config {
