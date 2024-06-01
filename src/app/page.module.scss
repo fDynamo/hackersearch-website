@@ -1,3 +1,5 @@
+@import "@/styles/shared";
+
 // Shared
 .generic-button {
   padding: 8px 32px;
@@ -25,16 +27,16 @@
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   right: 0;
   background: white;
-  z-index: 9;
+  z-index: 1;
 }
 
 .nav__container {
-  width: 1440px;
+  width: $breakpoint-desktop;
   padding: 16px;
   height: 60px;
   display: flex;
@@ -54,6 +56,12 @@
   margin-left: auto;
 }
 
+@media screen and (max-width: $breakpoint-desktop) {
+  .nav__container {
+    width: $breakpoint-tablet;
+  }
+}
+
 .main {
   display: flex;
   flex-direction: column;
@@ -63,7 +71,14 @@
 }
 
 .container {
-  width: 720px;
+  width: $breakpoint-tablet;
+  padding: 20px;
+}
+
+@media screen and (max-width: $breakpoint-tablet) {
+  .container {
+    width: 100%;
+  }
 }
 
 .hero {
@@ -116,6 +131,12 @@
 
   span {
     font-size: 16px;
+  }
+}
+
+@media screen and (max-width: $breakpoint-tablet) {
+  .social__control {
+    width: 150px;
   }
 }
 
