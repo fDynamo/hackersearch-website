@@ -7,7 +7,6 @@ import {
   SearchResultObj,
 } from "@/utilities/customTypes";
 import { sendAPISearchRequest } from "@/utilities/useAPI";
-import { DUMMY_RESULTS } from "@/utilities/dummy";
 import useSessionStorage from "./hooks/useSessionStorage";
 import SafeImage from "@/components/SafeImage";
 import ModalBase from "@/components/ModalBase";
@@ -52,8 +51,7 @@ export default function Home() {
   const [vsRelevanceCap, setVsRelevanceCap] = useState(1);
 
   // Other states
-  const [searchResults, setSearchResults] =
-    useState<SearchResultObj[]>(DUMMY_RESULTS);
+  const [searchResults, setSearchResults] = useState<SearchResultObj[]>([]);
   const [isLoadingSearch, setIsLoadingSearch] = useState(false);
   const [isAdvancedOptionsOpen, setIsAdvancedOptionsOpen] = useState(false);
   const [isExportOptionsOpen, setIsExportOptionsOpen] = useState(false);
@@ -628,10 +626,10 @@ export default function Home() {
       <header>
         <nav className={styles.nav}>
           <div className={styles["nav__container"]}>
-            <a href="https://test.com">about</a>
-            <a href="https://test.com">contact</a>
-            <a href="https://test.com">pricing</a>
-            <a href="https://test.com">suggest a feature</a>
+            <a href="mailto:fbdlabs@outlook.com">contact</a>
+            <a href="https://insigh.to/b/hackersearch" target="_blank">
+              suggest a feature
+            </a>
             <a href="https://test.com">survey</a>
             <button className={styles["sign-in-button"]}>sign in</button>
           </div>
