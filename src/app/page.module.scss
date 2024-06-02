@@ -404,3 +404,20 @@
     padding: 0;
   }
 }
+
+.mobile-gate {
+  display: none;
+}
+@media screen and (max-width: $breakpoint-tablet) {
+  .header,
+  .main {
+    display: none;
+  }
+
+  .mobile-gate {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+  }
+}

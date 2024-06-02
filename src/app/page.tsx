@@ -623,7 +623,10 @@ export default function Home() {
       {modalAdvancedOptions()}
       {modalExportOptions()}
       {renderScrollUpWidget()}
-      <header>
+      <div className={styles["mobile-gate"]}>
+        hackersearch is only available on desktop
+      </div>
+      <header className={styles.header}>
         <nav className={styles.nav}>
           <div className={styles["nav__container"]}>
             <a href="mailto:fbdlabs@outlook.com">contact</a>
