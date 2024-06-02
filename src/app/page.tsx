@@ -100,7 +100,7 @@ export default function Home() {
     setIsLoadingSearch(true);
 
     const isModified = isModifiedSearch;
-    if (!isModified && !hasMoreResults) return;
+    if (!isModified && !hasMoreResults && !overrides) return;
 
     // Handle overrides
     let fSortType = searchSortType;
